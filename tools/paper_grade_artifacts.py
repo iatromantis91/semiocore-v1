@@ -16,18 +16,18 @@ Outputs (default):
     paper_tables/*.csv|.md
     paper_figures/*.png
     paper_citations.md
+    witness.txt   (selected permutation + metrics)
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 
 def _quote(s: str) -> str:
@@ -38,18 +38,15 @@ def _quote(s: str) -> str:
 
 
 def run(cmd: list[str], cwd: Optional[Path] = None) -> None:
-    # Print in a style similar to your other runners
     print("+", " ".join(_quote(c) for c in cmd))
     subprocess.check_call(cmd, cwd=str(cwd) if cwd else None)
 
 
 def ensure_editable_install(py: str) -> None:
-    # Ensures `python -m semioc ...` and `python -m paper_figures...` work reliably.
     run([py, "-m", "pip", "install", "-e", "."])
 
 
 def ensure_matplotlib(py: str) -> None:
-    # Make figures needs matplotlib. Install only if missing.
     try:
         subprocess.check_call([py, "-c", "import matplotlib"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
@@ -76,58 +73,116 @@ def load_json(p: Path) -> dict[str, Any]:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-def pick_witness_perm_trace(ctxscan_report: dict[str, Any], perm_dir: Path, *, fallback_index: int = 1) -> Path:
+def _safe_float(x: Any) -> Optional[float]:
+    try:
+        if x is None:
+            return None
+        return float(x)
+    except Exception:
+        return None
+
+
+def _objs_from_trace(tr: dict[str, Any]) -> list[Any]:
+    ev = tr.get("events") or []
+    if not isinstance(ev, list):
+        return []
+    return [e.get("obj") for e in ev if isinstance(e, dict)]
+
+
+def _hamming(a: list[Any], b: list[Any]) -> int:
+    m = min(len(a), len(b))
+    return sum(1 for i in range(m) if a[i] != b[i]) + abs(len(a) - len(b))
+
+
+def pick_best_perm_trace(
+    base_trace_path: Path,
+    ctxscan_report: dict[str, Any],
+    perm_dir: Path,
+    *,
+    fallback_index: int = 1,
+) -> Tuple[Path, dict[str, Any]]:
     """
-    Try to choose the most relevant permutation trace for "permuted" comparison.
+    Choose the permutation trace that maximizes observable divergence vs the base trace.
 
-    Priority:
-      1) witness.trace_file (if present)
-      2) witness.i -> perm_{i:02d}.trace.json
-      3) permutations[fallback_index].trace_file (if present)
-      4) perm_{fallback_index:02d}.trace.json
+    Score (lexicographic):
+      1) abs(delta_kappa)
+      2) obj_hamming
+      3) abs(delta_rho)
+
+    Returns:
+      (best_perm_trace_path, metrics_dict)
     """
-    # 1) witness.trace_file
-    witness = ctxscan_report.get("witness")
-    if isinstance(witness, dict):
-        tf = witness.get("trace_file")
-        if isinstance(tf, str) and tf:
-            p = Path(tf)
-            if not p.is_absolute():
-                p = (perm_dir.parent / tf).resolve()
-            if p.exists():
-                return p
+    base_tr = load_json(base_trace_path)
+    base_sum = base_tr.get("summary") or {}
+    base_kappa = _safe_float(base_sum.get("kappa"))
+    base_rho = _safe_float(base_sum.get("rho"))
+    base_objs = _objs_from_trace(base_tr)
 
-        # 2) witness.i
-        wi = witness.get("i")
-        if isinstance(wi, int):
-            p = perm_dir / f"perm_{wi:02d}.trace.json"
-            if p.exists():
-                return p
-
-    # 3) permutations[fallback_index].trace_file
-    perms = ctxscan_report.get("permutations") or []
-    if isinstance(perms, list) and len(perms) > fallback_index:
-        entry = perms[fallback_index]
-        if isinstance(entry, dict):
-            tf = entry.get("trace_file")
-            if isinstance(tf, str) and tf:
-                p = Path(tf)
-                if not p.is_absolute():
-                    p = (perm_dir.parent / tf).resolve()
-                if p.exists():
-                    return p
-
-    # 4) fallback perm_{idx}
-    p = perm_dir / f"perm_{fallback_index:02d}.trace.json"
-    if p.exists():
-        return p
-
-    # As a last resort: first perm file found
     candidates = sorted(perm_dir.glob("perm_*.trace.json"))
-    if candidates:
-        return candidates[0]
+    if not candidates:
+        # fallback: perm_{idx}
+        p = perm_dir / f"perm_{fallback_index:02d}.trace.json"
+        if p.exists():
+            candidates = [p]
+        else:
+            raise FileNotFoundError(f"No permutation trace files found in: {perm_dir}")
 
-    raise FileNotFoundError(f"No permutation trace files found in: {perm_dir}")
+    perms = ctxscan_report.get("permutations") or []
+    baseline_ctx = (ctxscan_report.get("baseline_ctx") or "")
+
+    best_path: Optional[Path] = None
+    best_score: Optional[tuple[float, int, float]] = None
+    best_meta: dict[str, Any] = {}
+
+    for fp in candidates:
+        tr = load_json(fp)
+        s = tr.get("summary") or {}
+        k = _safe_float(s.get("kappa"))
+        r = _safe_float(s.get("rho"))
+        objs = _objs_from_trace(tr)
+
+        dk = (k - base_kappa) if (k is not None and base_kappa is not None) else None
+        dr = (r - base_rho) if (r is not None and base_rho is not None) else None
+        ham = _hamming(base_objs, objs)
+
+        score = (
+            abs(dk) if dk is not None else -1.0,
+            ham,
+            abs(dr) if dr is not None else -1.0,
+        )
+
+        if best_score is None or score > best_score:
+            best_score = score
+            best_path = fp
+
+            # try to recover perm index and ctx from report
+            perm_ctx = ""
+            try:
+                # filename "perm_03.trace.json" -> 3
+                name = fp.name
+                idx = int(name.split("_")[1].split(".")[0])
+                if isinstance(perms, list) and idx < len(perms) and isinstance(perms[idx], dict):
+                    perm_ctx = perms[idx].get("ctx") or ""
+            except Exception:
+                perm_ctx = ""
+
+            best_meta = {
+                "base_trace": str(base_trace_path),
+                "perm_trace": str(fp),
+                "baseline_ctx": baseline_ctx,
+                "permuted_ctx": perm_ctx,
+                "obj_hamming": ham,
+                "delta_kappa": dk,
+                "delta_rho": dr,
+                "base_kappa": base_kappa,
+                "perm_kappa": k,
+                "base_rho": base_rho,
+                "perm_rho": r,
+                "score": {"abs_delta_kappa": score[0], "obj_hamming": score[1], "abs_delta_rho": score[2]},
+            }
+
+    assert best_path is not None
+    return best_path, best_meta
 
 
 def main() -> None:
@@ -156,8 +211,8 @@ def main() -> None:
     ap.add_argument("--no-e1", action="store_true", help="Skip running E1")
     ap.add_argument("--no-e3", action="store_true", help="Skip running E3")
 
-    # Permutation selection for the "permuted witness" trace passed to make_tables/make_figures
-    ap.add_argument("--perm-index", type=int, default=1, help="Fallback perm index for e2p (default: 1 -> perm_01)")
+    # Permutation fallback index (used only if no perm files exist)
+    ap.add_argument("--perm-index", type=int, default=1, help="Fallback perm index (default: 1 -> perm_01)")
 
     args = ap.parse_args()
 
@@ -169,7 +224,6 @@ def main() -> None:
         shutil.rmtree(outroot)
     outroot.mkdir(parents=True, exist_ok=True)
 
-    # Optional: ensure editable install
     if args.install:
         ensure_editable_install(py)
 
@@ -205,17 +259,33 @@ def main() -> None:
         [py, "-m", "semioc", "ctxscan", str(e2_program), "--world", str(world), "--emit-report", str(ctxscan_report), "--emit-dir", str(ctxscan_dir), "--max-perms", str(args.max_perms)]
     )
 
-    # Pick permuted trace for downstream tables/figures
     report = load_json(ctxscan_report)
-    e2p_trace = pick_witness_perm_trace(report, ctxscan_dir, fallback_index=args.perm_index)
+
+    # Pick best permuted trace by measured divergence
+    e2p_trace, meta = pick_best_perm_trace(e2_trace, report, ctxscan_dir, fallback_index=args.perm_index)
+
+    # Write witness.txt (audit trail)
+    witness_txt = outroot / "witness.txt"
+    lines = [
+        "SemioCore paper-grade witness selection",
+        f"base_trace     : {meta.get('base_trace')}",
+        f"perm_trace     : {meta.get('perm_trace')}",
+        f"baseline_ctx   : {meta.get('baseline_ctx')}",
+        f"permuted_ctx   : {meta.get('permuted_ctx')}",
+        f"obj_hamming    : {meta.get('obj_hamming')}",
+        f"delta_kappa    : {meta.get('delta_kappa')}",
+        f"delta_rho      : {meta.get('delta_rho')}",
+        f"base_kappa/rho : {meta.get('base_kappa')}/{meta.get('base_rho')}",
+        f"perm_kappa/rho : {meta.get('perm_kappa')}/{meta.get('perm_rho')}",
+        f"score          : {meta.get('score')}",
+    ]
+    witness_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     # Generate tables/figures/snippets
     tables_dir = outroot / "paper_tables"
     figs_dir = outroot / "paper_figures"
     cites_md = outroot / "paper_citations.md"
 
-    # Tables: requires E1/E3 traces, but your make_tables signature requires them.
-    # If you skip E1/E3, we still need placeholders; best practice is: don't skip them.
     if args.no_e1 or args.no_e3:
         raise SystemExit("For paper_figures.make_tables/make_figures as currently written, do not use --no-e1/--no-e3.")
 
@@ -254,12 +324,12 @@ def main() -> None:
         ]
     )
 
-    # Minimal sanity prints
     print("OK: paper-grade artifacts")
     print("  outdir   :", outroot)
     print("  program  :", e2_program)
     print("  ctxscan  :", ctxscan_report)
-    print("  e2p      :", e2p_trace)
+    print("  e2p(best):", e2p_trace)
+    print("  witness  :", witness_txt)
     print("  tables   :", tables_dir)
     print("  figures  :", figs_dir)
     print("  citations:", cites_md)

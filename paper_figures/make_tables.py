@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import csv
+import glob
 import os
 from typing import Any, Dict, List
 
@@ -13,20 +14,42 @@ def write_csv(path: str, rows: List[Dict[str, Any]], fieldnames: List[str]) -> N
         for r in rows:
             w.writerow(r)
 
-def md_table(rows: List[Dict[str, Any]], cols: List[str]) -> str:
+def md_table(rows: List[Dict[str, Any]], cols: List[str]) ->str:
     header = "| " + " | ".join(cols) + " |\n"
     sep = "| " + " | ".join(["---"] * len(cols)) + " |\n"
     body_lines = []
     for r in rows:
         body_lines.append("| " + " | ".join([str(r.get(c, "")) for c in cols]) + " |")
     return header + sep + "\n".join(body_lines) + "\n"
+def _collect_paths(glob_pat: str | None, single_path: str) -> List[str]:
+    """Return a list of trace paths. If glob_pat is set, it overrides single_path."""
+    if glob_pat:
+        ps = sorted(glob.glob(glob_pat, recursive=True))
+        if not ps:
+            raise SystemExit(f"No files matched --glob: {glob_pat}")
+        return ps
+    return [single_path]
+
+def _seed_tag(path: str, i: int) -> str:
+    """
+    Best-effort seed label from path. If you store runs as .../seed_003/... it will surface that.
+    Otherwise fallback to index.
+    """
+    p = path.replace("\\", "/")
+    for part in p.split("/"):
+        if part.startswith("seed_"):
+            return part
+    return f"seed_{i:03d}"
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--outdir", default="out/paper_figures")
     ap.add_argument("--e1", required=True)
-    ap.add_argument("--e2", required=True)
-    ap.add_argument("--e2p", required=True)
+    ap.add_argument("--e2", required=True, help="Single E2 base trace (ignored if --e2-glob is set)")
+    ap.add_argument("--e2p", required=True, help="Single E2 perm trace (ignored if --e2p-glob is set)")
+    ap.add_argument("--e2-glob", default=None, help="Glob for multiple E2 base traces (e.g. out/papergrade/runs/**/e2.trace.json)")
+    ap.add_argument("--e2p-glob", default=None, help="Glob for multiple E2 perm traces (e.g. out/papergrade/runs/**/e2p.trace.json)")
+    ap.add_argument("--pick", type=int, default=0, help="Which run index to use for Table 2 event-level comparison when using globs (default: 0)")
     ap.add_argument("--e3", required=True)
     ap.add_argument("--ctxreport", required=True)
     args = ap.parse_args()
@@ -34,19 +57,29 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
 
     e1 = load_json(args.e1)
-    e2 = load_json(args.e2)
-    e2p = load_json(args.e2p)
+    e2_paths = _collect_paths(args.e2_glob, args.e2)
+    e2p_paths = _collect_paths(args.e2p_glob, args.e2p)
+    n = min(len(e2_paths), len(e2p_paths))
+    e2_paths = e2_paths[:n]
+    e2p_paths = e2p_paths[:n]
+    if n == 0:
+        raise SystemExit("No E2/E2p traces found.")
+
+    pick = max(0, min(args.pick, n - 1))
+    e2 = load_json(e2_paths[pick])
+    e2p = load_json(e2p_paths[pick])
     e3 = load_json(args.e3)
     ctxr = load_json(args.ctxreport)
-    tr_e1 = e1
-    tr_e3 = e3
-    tr_base = e2
-    tr_perm = e2p
+
 
     runs = [
         summarize_trace(e1, "E1 (baseline)"),
-        summarize_trace(e2, "E2 (base: Add>>Sign)"),
-        summarize_trace(e2p, "E2 (perm: Sign>>Add)"),
+    ]
+    for i in range(n):
+        tag = _seed_tag(e2_paths[i], i)
+        runs.append(summarize_trace(load_json(e2_paths[i]), f"E2 base ({tag})"))
+        runs.append(summarize_trace(load_json(e2p_paths[i]), f"E2 perm ({tag})"))
+    runs += [
         summarize_trace(e3, "E3 (seeded jitter)"),
     ]
     cols_runs = ["label", "program_file", "ctx", "N", "deltaT", "rho", "kappa", "obj_seq"]
@@ -119,6 +152,31 @@ def main():
     with open(os.path.join(args.outdir, "table_ctxreport.md"), "w", encoding="utf-8") as f:
         f.write("# Table 3. Contextuality diagnostics (derived)\n\n")
         f.write(md_table(ctx_rows, cols_ctx))
+
+        # New: per-seed deltas (paper-grade). Does not break existing pipeline.
+    seed_rows = []
+    for i in range(n):
+        tr_b = load_json(e2_paths[i])
+        tr_p = load_json(e2p_paths[i])
+        b_objs = [e.get("obj") for e in (tr_b.get("events") or [])]
+        p_objs = [e.get("obj") for e in (tr_p.get("events") or [])]
+        m = min(len(b_objs), len(p_objs))
+        ham = sum(1 for j in range(m) if b_objs[j] != p_objs[j]) + abs(len(b_objs) - len(p_objs))
+        bs2 = tr_b.get("summary") or {}
+        ps2 = tr_p.get("summary") or {}
+        dk = (float(ps2["kappa"]) - float(bs2["kappa"])) if ("kappa" in bs2 and "kappa" in ps2) else None
+        dr = (float(ps2["rho"]) - float(bs2["rho"])) if ("rho" in bs2 and "rho" in ps2) else None
+        seed_rows.append({
+            "run": _seed_tag(e2_paths[i], i),
+            "obj_hamming": ham,
+            "delta_kappa": (None if dk is None else round(dk, 3)),
+            "delta_rho": (None if dr is None else round(dr, 3)),
+        })
+    cols_seed = ["run", "obj_hamming", "delta_kappa", "delta_rho"]
+    write_csv(os.path.join(args.outdir, "table_ctxreport_seeds.csv"), seed_rows, cols_seed)
+    with open(os.path.join(args.outdir, "table_ctxreport_seeds.md"), "w", encoding="utf-8") as f:
+        f.write("# Table 3b. Contextuality deltas by seed/run\n\n")
+        f.write(md_table(seed_rows, cols_seed))
 
     print("OK: tables written to", args.outdir)
 

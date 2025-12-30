@@ -53,8 +53,8 @@ def main():
         raise RuntimeError("ctxreport table is empty")
 
     e1 = find_run(runs, "E1")
-    e2b = find_run(runs, "E2 (base")
-    e2p = find_run(runs, "E2 (perm")
+    e2b = find_run(runs, "E2 base")
+    e2p = find_run(runs, "E2 perm")
     e3 = find_run(runs, "E3")
 
     ctx0 = ctx[0]
