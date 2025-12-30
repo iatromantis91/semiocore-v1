@@ -88,3 +88,33 @@ paper-figures:
 	  --runs_csv $(OUT)/paper_figures/table_runs.csv \
 	  --ctx_csv $(OUT)/paper_figures/table_ctxreport.csv \
 	  --figdir $(OUT)/paper_figures
+
+.PHONY: paper-demo paper-demo-run paper-demo-replay paper-demo-ctxscan paper-demo-compare
+
+paper-demo: paper-demo-run paper-demo-replay paper-demo-ctxscan paper-demo-compare
+	@echo "OK: paper-demo"
+
+paper-demo-run:
+	@mkdir -p out
+	py -3 -m semioc run programs/e1_fusion.sc --world fixtures/world/paper_world.json --emit-manifest out/e1.manifest.json --emit-trace out/e1.trace.json
+	py -3 -m semioc run programs/e2_border.sc --world fixtures/world/paper_world.json --emit-manifest out/e2.manifest.json --emit-trace out/e2.trace.json
+	py -3 -m semioc run programs/e3_jitter_seed.sc --world fixtures/world/paper_world.json --emit-manifest out/e3.manifest.json --emit-trace out/e3.trace.json
+
+paper-demo-replay:
+	@mkdir -p out
+	py -3 -m semioc replay --manifest fixtures/expected/e3.manifest.json --emit-trace out/e3.replay.trace.json
+
+paper-demo-ctxscan:
+	@mkdir -p out
+	py -3 -m semioc ctxscan programs/e1_fusion.sc --world fixtures/world/paper_world.json --emit-report out/e1.ctxscan.json
+	py -3 -m semioc ctxscan programs/e2_border.sc --world fixtures/world/paper_world.json --emit-report out/e2.ctxscan.json
+	py -3 -m semioc ctxscan programs/e3_jitter_seed.sc --world fixtures/world/paper_world.json --emit-report out/e3.ctxscan.json
+
+paper-demo-compare:
+	py -3 tools/compare_trace.py fixtures/expected/e1.trace.json out/e1.trace.json
+	py -3 tools/compare_trace.py fixtures/expected/e2.trace.json out/e2.trace.json
+	py -3 tools/compare_trace.py fixtures/expected/e3.trace.json out/e3.trace.json
+	py -3 tools/compare_trace.py fixtures/expected/e3.replay.trace.json out/e3.replay.trace.json
+	py -3 tools/compare_json.py fixtures/expected/e1.ctxscan.json out/e1.ctxscan.json
+	py -3 tools/compare_json.py fixtures/expected/e2.ctxscan.json out/e2.ctxscan.json
+	py -3 tools/compare_json.py fixtures/expected/e3.ctxscan.json out/e3.ctxscan.json
