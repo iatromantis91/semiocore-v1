@@ -26,7 +26,7 @@ def lcg32_u01(state: int) -> Tuple[float, int]:
     return u, state2
 
 def _q(x: float) -> float:
-    # Quantize to avoid floating artefacts (fixtures expect clean decimals)
+    # Quantize to avoid decimal-add binary artefacts (E1)
     return float(round(float(x), 10))
 
 def apply_context(r: float, ctx: Context, rng_state: Optional[int]) -> Tuple[float, Optional[int], Optional[float]]:
@@ -55,11 +55,6 @@ def apply_context(r: float, ctx: Context, rng_state: Optional[int]) -> Tuple[flo
     return r, rng_state, noise_out
 
 def run_program(program: Program, world_channels: Dict[str, float], *, program_file: str) -> Dict[str, Any]:
-    """
-    Produce trace JSON matching fixtures:
-      { schema, program_file, events:[...], summary:{N,deltaT,rho,kappa} }
-    No extra top-level keys.
-    """
     t = 0.0
     bias = 0.0
     rng_state: Optional[int] = (program.seed & 0xFFFFFFFF) if program.seed is not None else None
@@ -100,20 +95,36 @@ def run_program(program: Program, world_channels: Dict[str, float], *, program_f
             kappa_loc = 1.0 if obj == expected_obj else 0.0
 
             step += 1
-            ev = {
-                "step": int(step),
-                "t": _q(t),
-                "ctx": ctx_str,
-                "ch": ch,
-                "s": _q(s),
-                "r_raw": _q(r_raw),
-                "r_eff": _q(r_eff),
-                "obj": obj,
-                "expected_obj": expected_obj,
-                "kappa_loc": _q(kappa_loc),
-            }
-            if noise is not None:
-                ev["noise"] = _q(noise)
+
+            # If there is jitter noise, do NOT quantize noise/r_eff (fixtures expect full precision).
+            if noise is None:
+                ev = {
+                    "step": int(step),
+                    "t": _q(t),
+                    "ctx": ctx_str,
+                    "ch": ch,
+                    "s": _q(s),
+                    "r_raw": _q(r_raw),
+                    "r_eff": _q(r_eff),
+                    "obj": obj,
+                    "expected_obj": expected_obj,
+                    "kappa_loc": _q(kappa_loc),
+                }
+            else:
+                ev = {
+                    "step": int(step),
+                    "t": float(t),
+                    "ctx": ctx_str,
+                    "ch": ch,
+                    "s": float(s),
+                    "r_raw": float(r_raw),
+                    "noise": float(noise),
+                    "r_eff": float(r_eff),
+                    "obj": obj,
+                    "expected_obj": expected_obj,
+                    "kappa_loc": float(kappa_loc),
+                }
+
             events.append(ev)
         elif k == "out_summarize":
             pass
@@ -126,16 +137,19 @@ def run_program(program: Program, world_channels: Dict[str, float], *, program_f
     rho = (N / t) if N > 0 else 0.0
     kappa = (sum(ev["kappa_loc"] for ev in events) / N) if N > 0 else 0.0
 
+    # Summary: keep quantized for stability (matches E1 fixtures)
+    summary = {
+        "N": int(N),
+        "deltaT": _q(t),
+        "rho": _q(rho),
+        "kappa": _q(kappa),
+    }
+
     trace = {
         "schema": "semiocore.trace.v1",
         "program_file": program_file,
         "events": events,
-        "summary": {
-            "N": int(N),
-            "deltaT": _q(t),
-            "rho": _q(rho),
-            "kappa": _q(kappa),
-        },
+        "summary": summary,
     }
     return trace
 
