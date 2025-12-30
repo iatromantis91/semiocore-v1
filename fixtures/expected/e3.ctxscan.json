@@ -19,7 +19,7 @@
         "kappa": 1.0,
         "rho": 1.0
       },
-      "trace_file": null
+      "trace_file": "out/e3.ctxscan.traces\\perm_00.trace.json"
     }
   ],
   "program_file": "programs/e3_jitter_seed.sc",
