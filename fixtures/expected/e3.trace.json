@@ -1,0 +1,38 @@
+{
+  "schema": "semiocore.trace.v1",
+  "program_file": "programs/e3_jitter_seed.sc",
+  "events": [
+    {
+      "step": 1,
+      "t": 1.0,
+      "ctx": "JitterU(0.05)",
+      "ch": "chS",
+      "s": 0.2,
+      "r_raw": 0.2,
+      "noise": -0.04795973142609,
+      "r_eff": 0.15204026857391,
+      "obj": "AFFIRM",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0
+    },
+    {
+      "step": 2,
+      "t": 2.0,
+      "ctx": "JitterU(0.05)",
+      "ch": "chS",
+      "s": 0.2,
+      "r_raw": 0.2,
+      "noise": -0.048345215176232165,
+      "r_eff": 0.15165478482376785,
+      "obj": "AFFIRM",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0
+    }
+  ],
+  "summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "rho": 1.0,
+    "kappa": 1.0
+  }
+}

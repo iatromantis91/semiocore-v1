@@ -1,0 +1,8 @@
+{
+  "schema": "semiocore.witness.v1",
+  "claim": "Border-induced contextuality under threshold projection",
+  "projection": "threshold@0",
+  "operators": ["Add(0.5)", "Sign"],
+  "witness_signal_s": -0.25,
+  "explanation": "s in [-k,0) with k=0.5; Add crosses the threshold before Sign, permutation does not."
+}

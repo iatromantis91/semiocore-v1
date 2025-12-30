@@ -1,0 +1,11 @@
+{
+  "schema": "semiocore.ctxreport.v1",
+  "base_ctx": "Add(0.5)>>Sign",
+  "permuted_ctx": "Sign>>Add(0.5)",
+  "observables": ["obj", "kappa", "rho"],
+  "CtxDiv": {
+    "obj_hamming": 2,
+    "delta_kappa": 1.0,
+    "delta_rho": 0.0
+  }
+}

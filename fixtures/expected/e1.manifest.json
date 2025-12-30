@@ -1,0 +1,14 @@
+{
+  "schema": "semiocore.manifest.v1",
+  "semio_version": "1.0.0",
+  "stdlib_version": "1.0.0",
+  "program_file": "programs/e1_fusion.sc",
+  "program_hash_sha256": "__RUNTIME__",
+  "world_file": "fixtures/world/paper_world.json",
+  "world_hash_sha256": "__RUNTIME__",
+  "protocol": "Strict",
+  "seed": null,
+  "rng": null,
+  "run_id": "__RUNTIME__",
+  "timestamp": "__RUNTIME__"
+}
