@@ -38,6 +38,10 @@ def main():
     e2p = load_json(args.e2p)
     e3 = load_json(args.e3)
     ctxr = load_json(args.ctxreport)
+    tr_e1 = e1
+    tr_e3 = e3
+    tr_base = e2
+    tr_perm = e2p
 
     runs = [
         summarize_trace(e1, "E1 (baseline)"),
@@ -80,17 +84,40 @@ def main():
         f.write("# Table 2. Event-level comparison (E2 base vs permuted)\n\n")
         f.write(md_table(rows_cmp, cols_cmp))
 
+    # --- Table 3 (ctxreport): derive from ctxscan report + base/permuted traces ---
+    # ctxscan report schema uses "baseline_ctx"/"permutations"/"witness"; it does not carry CtxDiv fields.
+    base_ctx = (ctxr.get("baseline_ctx") or "")
+    witness = ctxr.get("witness") or {}
+    if isinstance(witness, dict) and witness.get("ctx"):
+        permuted_ctx = witness["ctx"]
+    else:
+        perms = ctxr.get("permutations") or []
+        permuted_ctx = (perms[1].get("ctx") if len(perms) > 1 else "") or ""
+
+    tr_base = load_json(args.e2)
+    tr_perm = load_json(args.e2p)
+
+    base_objs = [e.get("obj") for e in (tr_base.get("events") or [])]
+    perm_objs = [e.get("obj") for e in (tr_perm.get("events") or [])]
+    m = min(len(base_objs), len(perm_objs))
+    obj_hamming = sum(1 for i in range(m) if base_objs[i] != perm_objs[i]) + abs(len(base_objs) - len(perm_objs))
+
+    bs = tr_base.get("summary") or {}
+    ps = tr_perm.get("summary") or {}
+    delta_kappa = (float(ps["kappa"]) - float(bs["kappa"])) if ("kappa" in bs and "kappa" in ps) else None
+    delta_rho = (float(ps["rho"]) - float(bs["rho"])) if ("rho" in bs and "rho" in ps) else None
+
     ctx_rows = [{
-        "base_ctx": ctxr.get("base_ctx"),
-        "permuted_ctx": ctxr.get("permuted_ctx"),
-        "obj_hamming": ctxr.get("CtxDiv", {}).get("obj_hamming"),
-        "delta_kappa": ctxr.get("CtxDiv", {}).get("delta_kappa"),
-        "delta_rho": ctxr.get("CtxDiv", {}).get("delta_rho"),
+        "base_ctx": base_ctx,
+        "permuted_ctx": permuted_ctx,
+        "obj_hamming": obj_hamming,
+        "delta_kappa": (None if delta_kappa is None else round(delta_kappa, 3)),
+        "delta_rho": (None if delta_rho is None else round(delta_rho, 3)),
     }]
     cols_ctx = ["base_ctx", "permuted_ctx", "obj_hamming", "delta_kappa", "delta_rho"]
     write_csv(os.path.join(args.outdir, "table_ctxreport.csv"), ctx_rows, cols_ctx)
     with open(os.path.join(args.outdir, "table_ctxreport.md"), "w", encoding="utf-8") as f:
-        f.write("# Table 3. Contextuality diagnostics (CtxDiv)\n\n")
+        f.write("# Table 3. Contextuality diagnostics (derived)\n\n")
         f.write(md_table(ctx_rows, cols_ctx))
 
     print("OK: tables written to", args.outdir)
