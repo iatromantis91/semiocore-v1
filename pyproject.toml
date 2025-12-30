@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semiocore"
+version = "1.0.0"
+description = "SemioCore v1.0.0 reference interpreter (MRA scaffold)"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name="Israel Huerta Castillo"}]
+dependencies = []
+
+[project.scripts]
+semioc = "semioc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["semioc"]
+exclude = ["tools*", "paper_figures*", "fixtures*", "programs*", "out*"]
