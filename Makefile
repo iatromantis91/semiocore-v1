@@ -118,3 +118,8 @@ paper-demo-compare:
 	py -3 tools/compare_json.py fixtures/expected/e1.ctxscan.json out/e1.ctxscan.json
 	py -3 tools/compare_json.py fixtures/expected/e2.ctxscan.json out/e2.ctxscan.json
 	py -3 tools/compare_json.py fixtures/expected/e3.ctxscan.json out/e3.ctxscan.json
+
+.PHONY: paper-artifacts
+
+paper-artifacts:
+	py -3 tools/paper_artifacts.py --clean
