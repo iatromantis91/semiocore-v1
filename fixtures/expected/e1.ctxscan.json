@@ -19,7 +19,7 @@
         "kappa": 1.0,
         "rho": 1.0
       },
-      "trace_file": null
+      "trace_file": "out/e1.ctxscan.traces\\perm_00.trace.json"
     },
     {
       "ctx": "Add(0.3)>>Add(0.2)",
@@ -31,7 +31,7 @@
         "kappa": 1.0,
         "rho": 1.0
       },
-      "trace_file": null
+      "trace_file": "out/e1.ctxscan.traces\\perm_01.trace.json"
     }
   ],
   "program_file": "programs/e1_fusion.sc",
