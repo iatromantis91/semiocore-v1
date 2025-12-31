@@ -22,6 +22,7 @@ Outputs (default):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
@@ -72,6 +73,12 @@ def write_e2_paper_program(dst_sc: Path, *, steps: int, seed: int, ctx: str, cha
 def load_json(p: Path) -> dict[str, Any]:
     return json.loads(p.read_text(encoding="utf-8"))
 
+def sha256_file(p: Path) -> str:
+    h = hashlib.sha256()
+    with p.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 def _safe_float(x: Any) -> Optional[float]:
     try:
@@ -198,10 +205,17 @@ def main() -> None:
     # Paper-grade E2 program generation
     ap.add_argument("--steps", type=int, default=50, help="Number of sense/commit steps for paper-grade E2 (default: 50)")
     ap.add_argument("--seed", type=int, default=12345, help="Seed for paper-grade E2 (default: 12345)")
+    ap.add_argument("--seed-count", type=int, default=1, help="Number of seeds for E2 sweep (default: 1)")
+    ap.add_argument(
+    "--sweep-tables",
+    action="store_true",
+    help="Use E2 seed sweep traces for make_tables (via --e2-glob/--e2p-glob).",
+)
+
     ap.add_argument(
         "--e2-ctx",
         default="Add(0.5) >> Sign >> JitterU(0.05)",
-        help="Context operator chain for paper-grade E2 (default: Add(0.5) >> Sign >> JitterU(0.05))",
+
     )
     ap.add_argument("--e2-channel", default="chN", help="World channel sensed by E2 (default: chN)")
 
@@ -228,60 +242,169 @@ def main() -> None:
         ensure_editable_install(py)
 
     # Generate paper-grade E2 program under outroot/programs (keeps repo clean)
-    e2_program = outroot / "programs" / "e2_border_paper.sc"
-    write_e2_paper_program(
-        e2_program,
-        steps=args.steps,
-        seed=args.seed,
-        ctx=args.e2_ctx,
-        channel=args.e2_channel,
-    )
+    # ---------------------------
+    # Paper-grade E2 seed sweep
+    # ---------------------------
+    e2_prog_dir = outroot / "programs"
+    e2_prog_dir.mkdir(parents=True, exist_ok=True)
 
-    # Paths for traces/manifests
-    e1_manifest = outroot / "e1.manifest.json"
-    e1_trace = outroot / "e1.trace.json"
+    sweep_dir = outroot / "e2_sweep"
+    sweep_dir.mkdir(parents=True, exist_ok=True)
+
+    seeds = [args.seed + i for i in range(args.seed_count)]
+
+    # Legacy/primary outputs (seed 0): keep existing filenames for downstream tooling
+    e2_program = e2_prog_dir / "e2_border_paper.sc"
     e2_manifest = outroot / "e2.manifest.json"
     e2_trace = outroot / "e2.trace.json"
+    ctxscan_report = outroot / "e2.ctxscan.json"
+    ctxscan_dir = outroot / "e2.ctxscan.traces"
+    e2p_trace = outroot / "e2p.trace.json"
+    witness_txt = outroot / "witness.txt"
+
+    # Paths for E1/E3 (unchanged)
+    e1_manifest = outroot / "e1.manifest.json"
+    e1_trace = outroot / "e1.trace.json"
     e3_manifest = outroot / "e3.manifest.json"
     e3_trace = outroot / "e3.trace.json"
 
-    # Run E1/E2/E3
+    # Run E1/E3 once
     if not args.no_e1:
-        run([py, "-m", "semioc", "run", args.e1_program, "--world", str(world), "--emit-manifest", str(e1_manifest), "--emit-trace", str(e1_trace)])
-    run([py, "-m", "semioc", "run", str(e2_program), "--world", str(world), "--emit-manifest", str(e2_manifest), "--emit-trace", str(e2_trace)])
+        run([py, "-m", "semioc", "run", args.e1_program, "--world", str(world),
+             "--emit-manifest", str(e1_manifest), "--emit-trace", str(e1_trace)])
     if not args.no_e3:
-        run([py, "-m", "semioc", "run", args.e3_program, "--world", str(world), "--emit-manifest", str(e3_manifest), "--emit-trace", str(e3_trace)])
+        run([py, "-m", "semioc", "run", args.e3_program, "--world", str(world),
+             "--emit-manifest", str(e3_manifest), "--emit-trace", str(e3_trace)])
 
-    # ctxscan for E2 paper-grade
-    ctxscan_report = outroot / "e2.ctxscan.json"
-    ctxscan_dir = outroot / "e2.ctxscan.traces"
-    run(
-        [py, "-m", "semioc", "ctxscan", str(e2_program), "--world", str(world), "--emit-report", str(ctxscan_report), "--emit-dir", str(ctxscan_dir), "--max-perms", str(args.max_perms)]
-    )
+    # Seed sweep + deterministic witness (seed 0) -----------------------------
 
-    report = load_json(ctxscan_report)
+    best_src_path: Path | None = None
+    best_meta: dict[str, Any] | None = None
+    best_seed_i: int | None = None
+    best_seed_tag: str | None = None
+    best_seed_program: Path | None = None
+    best_seed_trace: Path | None = None
+    best_seed_ctxrep: Path | None = None
+    best_seed_ctxdir: Path | None = None
 
-    # Pick best permuted trace by measured divergence
-    e2p_trace, meta = pick_best_perm_trace(e2_trace, report, ctxscan_dir, fallback_index=args.perm_index)
+    for i, sd in enumerate(seeds):
+        tag = f"{i:02d}"
 
-    # Write witness.txt (audit trail)
-    witness_txt = outroot / "witness.txt"
+        # seed 0 uses legacy paths; others go to sweep_dir
+        if i == 0:
+            prog_i = e2_program
+            manifest_i = e2_manifest
+            trace_i = e2_trace
+            ctxrep_i = ctxscan_report
+            ctxdir_i = ctxscan_dir
+            e2p_out_i: Path | None = None   # do NOT write stable e2p inside loop
+        else:
+            prog_i = e2_prog_dir / f"e2_border_paper_seed_{tag}.sc"
+            manifest_i = sweep_dir / f"e2_seed_{tag}.manifest.json"
+            trace_i = sweep_dir / f"e2_seed_{tag}.trace.json"
+            ctxrep_i = sweep_dir / f"e2_seed_{tag}.ctxscan.json"
+            ctxdir_i = sweep_dir / f"e2_seed_{tag}.ctxscan.traces"
+            e2p_out_i = sweep_dir / f"e2p_seed_{tag}.trace.json"
+
+        write_e2_paper_program(
+            prog_i,
+            steps=args.steps,
+            seed=sd,
+            ctx=args.e2_ctx,
+            channel=args.e2_channel,
+        )
+
+        run([py, "-m", "semioc", "run", str(prog_i), "--world", str(world),
+             "--emit-manifest", str(manifest_i), "--emit-trace", str(trace_i)])
+
+        run([py, "-m", "semioc", "ctxscan", str(prog_i), "--world", str(world),
+            "--emit-report", str(ctxrep_i), "--emit-dir", str(ctxdir_i),
+            "--max-perms", str(args.max_perms)])
+
+        report_i = load_json(ctxrep_i)
+        perm_path_i, meta_i = pick_best_perm_trace(
+            trace_i, report_i, ctxdir_i, fallback_index=args.perm_index
+        )
+
+        # Always capture seed 0 as the unique witness (independent of sweep copies)
+        if i == 0:
+            best_src_path = perm_path_i
+            best_meta = meta_i
+
+            best_seed_i = i
+            best_seed_tag = tag
+            best_seed_program = prog_i
+            best_seed_trace = trace_i
+            best_seed_ctxrep = ctxrep_i
+            best_seed_ctxdir = ctxdir_i
+
+        # Optional: write per-seed e2p outputs (sweep only)
+        if e2p_out_i is not None:
+            shutil.copyfile(perm_path_i, e2p_out_i)
+
+    # Single source of truth for stable e2p/witness + witness.txt
+    if best_src_path is None or best_meta is None:
+        raise RuntimeError("Seed 0 did not produce a witness perm trace/meta.")
+
+    if best_seed_i != 0:
+        raise SystemExit(f"Internal error: seed_witness expected 0, got {best_seed_i}")
+
+    # IMPORTANT: overwrite stable e2p even if it exists (correct even without --clean)
+    shutil.copyfile(best_src_path, e2p_trace)
+    perm_sha = sha256_file(best_src_path)
+    e2p_sha  = sha256_file(e2p_trace)
+    sha_match = (perm_sha == e2p_sha)
+
+    def norm(p: Path | None) -> str:
+        return "" if p is None else str(p).replace("\\", "/")
+
+    # Write witness.txt from best_meta/best_src_path (no recomputation)
+    meta = dict(best_meta)
+    meta["perm_trace"] = norm(best_src_path)
+    # base_trace comes from meta; normalize if present
+    if meta.get("base_trace"):
+        meta["base_trace"] = str(meta["base_trace"]).replace("\\", "/")
+
     lines = [
         "SemioCore paper-grade witness selection",
+        "schema_version : 1",
+
+        # Explicit witness seed (no inference required)
+        f"seed_witness   : {best_seed_i}",
+        f"seed_tag       : {best_seed_tag}",
+        f"seed_program   : {norm(best_seed_program)}",
+        f"seed_trace     : {norm(best_seed_trace)}",
+        f"seed_ctxreport : {norm(best_seed_ctxrep)}",
+        f"seed_ctxdir    : {norm(best_seed_ctxdir)}",
+
+        # Stable output and exact chosen perm trace
+        f"e2p_trace      : {norm(e2p_trace)}",
         f"base_trace     : {meta.get('base_trace')}",
         f"perm_trace     : {meta.get('perm_trace')}",
+        f"perm_trace_src : {norm(best_src_path)}",
+        f"perm_sha256    : {perm_sha}",
+        f"e2p_sha256     : {e2p_sha}",
+        f"sha_match      : {sha_match}",
+
+        # Context + metrics actually present in best_meta
         f"baseline_ctx   : {meta.get('baseline_ctx')}",
         f"permuted_ctx   : {meta.get('permuted_ctx')}",
         f"obj_hamming    : {meta.get('obj_hamming')}",
         f"delta_kappa    : {meta.get('delta_kappa')}",
         f"delta_rho      : {meta.get('delta_rho')}",
-        f"base_kappa/rho : {meta.get('base_kappa')}/{meta.get('base_rho')}",
-        f"perm_kappa/rho : {meta.get('perm_kappa')}/{meta.get('perm_rho')}",
+        f"base_kappa     : {meta.get('base_kappa')}",
+        f"perm_kappa     : {meta.get('perm_kappa')}",
+        f"base_rho       : {meta.get('base_rho')}",
+        f"perm_rho       : {meta.get('perm_rho')}",
         f"score          : {meta.get('score')}",
     ]
     witness_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    # Generate tables/figures/snippets
+    # Ensure seed 00 exists in sweep_dir for globbing (tables/figures)
+    if args.sweep_tables and args.seed_count > 1:
+        shutil.copyfile(e2_trace, sweep_dir / "e2_seed_00.trace.json")
+        shutil.copyfile(e2p_trace, sweep_dir / "e2p_seed_00.trace.json")
+
     tables_dir = outroot / "paper_tables"
     figs_dir = outroot / "paper_figures"
     cites_md = outroot / "paper_citations.md"
@@ -289,17 +412,23 @@ def main() -> None:
     if args.no_e1 or args.no_e3:
         raise SystemExit("For paper_figures.make_tables/make_figures as currently written, do not use --no-e1/--no-e3.")
 
-    run(
-        [
-            py, "-m", "paper_figures.make_tables",
-            "--outdir", str(tables_dir),
-            "--e1", str(e1_trace),
-            "--e2", str(e2_trace),
-            "--e2p", str(e2p_trace),
-            "--e3", str(e3_trace),
-            "--ctxreport", str(ctxscan_report),
+    tables_cmd = [
+        py, "-m", "paper_figures.make_tables",
+        "--outdir", str(tables_dir),
+        "--e1", str(e1_trace),
+        "--e3", str(e3_trace),
+        "--ctxreport", str(ctxscan_report),
+    ]
+
+    if args.sweep_tables and args.seed_count > 1:
+        tables_cmd += [
+            "--e2-glob", str(sweep_dir / "e2_seed_*.trace.json"),
+            "--e2p-glob", str(sweep_dir / "e2p_seed_*.trace.json"),
         ]
-    )
+    else:
+        tables_cmd += ["--e2", str(e2_trace), "--e2p", str(e2p_trace)]
+
+    run(tables_cmd)
 
     ensure_matplotlib(py)
 
