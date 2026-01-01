@@ -38,3 +38,7 @@ From Git Bash:
 make paper-demo
 
 
+
+## Contracts (Stable JSON artifacts)
+- Trace: docs/contract/trace.v1.md
+- Ctxscan: docs/contract/ctxscan.v1.md
