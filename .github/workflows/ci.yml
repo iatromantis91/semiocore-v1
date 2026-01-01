@@ -20,8 +20,8 @@ jobs:
       - name: Install (editable)
         run: |
           python -m pip install -U pip
-          python -m pip install -e .
-          python -m pip install pytest matplotlib jsonschema
+          python -m pip install -e ".[test]"
+ 
 
       - name: Run tests
         run: |
