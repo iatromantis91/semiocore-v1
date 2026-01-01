@@ -4,8 +4,48 @@
   "title": "semiocore ctxscan report",
   "type": "object",
   "properties": {
-    "schema": { "const": "semiocore.ctxscan.v1" }
+    "schema": { "const": "semiocore.ctxscan.v1" },
+
+    "protocol": { "type": "string" },
+
+    "program_file": { "type": "string" },
+    "world_file": { "type": "string" },
+
+    "witness": {
+      "type": "object",
+      "additionalProperties": true
+    },
+
+    "permutations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+
+    "baseline_ctx": { "type": "string" },
+
+    "baseline_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
+
+    "dkappa_max": { "type": "number" },
+
+    "noncontextual": { "type": "boolean" }
   },
-  "required": ["schema"],
+  "required": [
+    "schema",
+    "protocol",
+    "program_file",
+    "world_file",
+    "witness",
+    "permutations",
+    "baseline_ctx",
+    "baseline_summary",
+    "dkappa_max",
+    "noncontextual"
+  ],
   "additionalProperties": true
 }
