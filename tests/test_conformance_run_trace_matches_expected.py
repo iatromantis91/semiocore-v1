@@ -17,6 +17,40 @@ WORLD = CONFORMANCE / "worlds" / "w_paper.json"
 EXPECTED = CONFORMANCE / "expected" / "c001.trace.json"
 TRACE_SCHEMA = REPO / "schemas" / "trace.schema.json"
 
+def _stable_path(s: str) -> str:
+    """
+    Normaliza rutas para que el hash sea cross-platform.
+    - Convierte backslashes a slashes
+    - Si contiene el path del repo, lo vuelve relativo al repo
+    - Si no, reduce a basename (para tmp/out variables)
+    """
+    s = s.replace("\\", "/")
+    repo = REPO.as_posix().rstrip("/")
+    if repo and repo in s:
+        return s.split(repo, 1)[1].lstrip("/")
+    if not s.startswith("/") and ":" not in s[:3]:
+        if s.startswith(("tests/", "schemas/", "fixtures/")):
+            return s
+    return os.path.basename(s)
+
+def _normalize_trace_for_hash(x: object) -> object:
+    if isinstance(x, dict):
+        out: dict[object, object] = {}
+        for k, v in x.items():
+            # normaliza rutas
+            if isinstance(k, str) and k.endswith("_file") and isinstance(v, str):
+                out[k] = _stable_path(v)
+                continue
+
+            # (opcional, recomendado) ignora metadatos típicamente volátiles si existen
+            if k in ("created_at", "timestamp", "host", "platform", "python", "cwd"):
+                continue
+
+            out[k] = _normalize_trace_for_hash(v)
+        return out
+    if isinstance(x, list):
+        return [_normalize_trace_for_hash(i) for i in x]
+    return x
 
 def _c14n_sha256(obj: object) -> str:
     # Canonical JSON (stable across formatting)
@@ -83,8 +117,9 @@ def test_conformance_run_trace_matches_expected(tmp_path: Path) -> None:
             assert k in o2, f"Trace missing required key: {k}"
 
     # 3) Deterministic canonical hash
-    h1 = _c14n_sha256(o1)
-    h2 = _c14n_sha256(o2)
+    h1 = _c14n_sha256(_normalize_trace_for_hash(o1))
+    h2 = _c14n_sha256(_normalize_trace_for_hash(o2))
+
     assert h1 == h2, f"Non-deterministic trace hash: {h1} != {h2}"
 
     # 4) Compare against expected (small + stable)
