@@ -1,5 +1,7 @@
 {
   "kind": "ctxscan",
   "sha256_c14n": "1fec2adbed016c80fd73e2c11917b5671c32b7d485719fb7450a420d0492ce67",
-  "required_keys": []
+  "required_keys": [
+    "schema"
+  ]
 }
