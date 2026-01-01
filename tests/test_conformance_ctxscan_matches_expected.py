@@ -26,6 +26,24 @@ EXPECTED = CONFORMANCE / "expected" / "c002.ctxscan.json"
 
 CTXSCAN_SCHEMA = REPO / "schemas" / "ctxscan.schema.json"
 
+def _stable_path(s: str) -> str:
+    """
+    Convierte rutas a una forma estable:
+    - si contiene el path del repo -> lo vuelve relativo al repo
+    - si no -> deja rutas relativas conocidas, o reduce a basename
+    """
+    s = s.replace("\\", "/")
+    repo = REPO.as_posix().rstrip("/")
+    if repo and repo in s:
+        return s.split(repo, 1)[1].lstrip("/")
+
+    # si ya parece relativo, lo mantenemos para paths dentro del repo
+    if not s.startswith("/") and ":" not in s[:3]:
+        if s.startswith(("tests/", "schemas/", "fixtures/")):
+            return s
+
+    # para tmp/out/emit dirs (variables), solo basename
+    return os.path.basename(s)
 
 def _c14n_sha256(obj: object) -> str:
     b = json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
@@ -40,23 +58,46 @@ def _schema_required_keys(schema: dict) -> list[str]:
     req = schema.get("required", [])
     return [str(x) for x in req] if isinstance(req, list) else []
 
+def _stable_basename(p: str) -> str:
+    # Unifica separadores y recorta a basename para que Windows/Linux den lo mismo
+    p = p.replace("\\", "/")
+    return os.path.basename(p)
+
 def _normalize_ctxscan_for_hash(x: object) -> object:
     """
-    Devuelve una vista estable del ctxscan:
-    - mantiene la estructura
-    - pero normaliza trace_file para que no dependa de emit_dir (solo basename)
+    Vista estable del ctxscan para hashing cross-platform:
+    - normaliza cualquier campo *_file a basename
+    - ordena determinísticamente la lista 'perms' (si existe)
     """
     if isinstance(x, dict):
         out: dict[object, object] = {}
+
         for k, v in x.items():
-            if k == "trace_file" and isinstance(v, str):
-                v = v.replace("\\", "/")
-                out[k] = os.path.basename(v)  # perm_00.trace.json
-            else:
-                out[k] = _normalize_ctxscan_for_hash(v)
+            # 1) normaliza paths en cualquier *_file (incluye trace_file, program_file, world_file, etc.)
+            if isinstance(k, str) and k.endswith("_file") and isinstance(v, str):
+                out[k] = _stable_basename(v)
+                continue
+
+            # 2) normaliza recursivamente
+            out[k] = _normalize_ctxscan_for_hash(v)
+
+        # 3) si existe 'perms', la ordenamos de forma estable
+        perms = out.get("perms")
+        if isinstance(perms, list) and perms and all(isinstance(i, dict) for i in perms):
+            def _perm_key(d: dict) -> tuple[str, str]:
+                ctx = str(d.get("ctx", ""))
+                params = d.get("params", {})
+                # params a string canónico para orden estable
+                params_s = json.dumps(params, sort_keys=True, separators=(",", ":"), ensure_ascii=False) if isinstance(params, dict) else str(params)
+                return (ctx, params_s)
+
+            out["perms"] = sorted(perms, key=_perm_key)
+
         return out
+
     if isinstance(x, list):
         return [_normalize_ctxscan_for_hash(i) for i in x]
+
     return x
 
 
