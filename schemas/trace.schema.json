@@ -4,8 +4,35 @@
   "title": "semiocore trace",
   "type": "object",
   "properties": {
-    "schema": { "const": "semiocore.trace.v1" }
+    "schema": { "const": "semiocore.trace.v1" },
+
+    "program_file": { "type": "string" },
+
+    "summary": {
+      "type": "object",
+      "properties": {
+        "N": { "type": "integer", "minimum": 0 },
+        "deltaT": { "type": "number" },
+        "kappa": { "type": "number" },
+        "rho": { "type": "number" }
+      },
+      "required": ["N"],
+      "additionalProperties": true
+    },
+
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ch": { "type": "string" },
+          "ctx": { "type": "string" }
+        },
+        "required": ["ch", "ctx"],
+        "additionalProperties": true
+      }
+    }
   },
-  "required": ["schema"],
+  "required": ["schema", "program_file", "summary", "events"],
   "additionalProperties": true
 }
