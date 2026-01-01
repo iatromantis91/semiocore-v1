@@ -32,21 +32,25 @@ def _schema_required_keys(schema: dict) -> list[str]:
     req = schema.get("required", [])
     return [str(x) for x in req] if isinstance(req, list) else []
 
+def _run_semioc_run(program: Path, world: Path, out_trace: Path) -> Path:
+    """
+    Ejecuta: semioc run <program> --world ... --emit-manifest ... --emit-trace ...
+    Devuelve la ruta del manifest generado.
+    """
+    out_manifest = out_trace.with_suffix(".manifest.json")
 
-def _run_semioc_run(program: Path, world: Path, out_trace: Path) -> None:
-    # Ajusta aquí SOLO si tu CLI usa flags distintos.
-    # Recomendación: copia exactamente los flags que ya usas en tools/paper_grade_artifacts.py.
     cmd = [
         sys.executable, "-m", "semioc",
         "run",
         str(program),
         "--world", str(world),
-        "--trace", str(out_trace),
-        "--seed", "0",
+        "--emit-manifest", str(out_manifest),
+        "--emit-trace", str(out_trace),
     ]
     r = subprocess.run(cmd, cwd=str(REPO), capture_output=True, text=True)
     assert r.returncode == 0, (r.stdout + "\n" + r.stderr)
 
+    return out_manifest
 
 def test_conformance_run_trace_matches_expected(tmp_path: Path) -> None:
     assert PROGRAM.exists(), f"Missing program: {PROGRAM}"

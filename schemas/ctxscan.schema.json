@@ -1,7 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://iatromantis91.github.io/semiocore-v1/schemas/ctxscan.schema.json",
-  "title": "semiocore ctxscan",
+  "title": "semiocore ctxscan report",
   "type": "object",
   "additionalProperties": true
 }
