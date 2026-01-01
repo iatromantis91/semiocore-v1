@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:semiocore:schema:trace:v1",
+  "$id": "https://github.com/iatromantis91/semiocore-v1/blob/main/schemas/trace.schema.json",
   "title": "semiocore trace",
   "type": "object",
   "properties": {
