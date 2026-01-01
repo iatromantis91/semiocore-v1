@@ -1,6 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:semiocore:schema:ctxscan:v1",
   "title": "semiocore ctxscan report",
   "type": "object",
+  "properties": {
+    "schema": { "const": "semiocore.ctxscan.v1" }
+  },
+  "required": ["schema"],
   "additionalProperties": true
 }
