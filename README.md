@@ -2,15 +2,26 @@
 
 This repository is a fixture-locked, paper-facing artifact for **SemioCore v1.0**, an experiment DSL designed to formalize **measurement regimes + explicit interventions**. The purpose is to make the manuscript’s central claims *executable* rather than merely descriptive.
 
+> Paper demo semantics: v1.0. Toolchain/contracts: v1.1.0 (SemVer minor).
+
 ## What this repo contains
-- `programs/*.sc`: three paper demos
-  - **E1**: affine fusion rewrite (safe equivalence under context algebra)
-  - **E2**: border contextuality under context permutation (CtxDiv + witness)
-  - **E3**: seeded pseudo-stochastic jitter (manifest+trace replay)
-- `fixtures/expected/*.json`: expected manifests/traces/reports (reference outputs)
-- `fixtures/world/paper_world.json`: a minimal world specification used in all demos
-- `paper_figures/*`: scripts to generate paper-ready tables, figures, and copy/paste results text
-- `Makefile`: one-command verification pipeline (`make paper-demo`)
+- `programs/conformance/*.sc`: conformance programs (fixture-locked)
+- `expected/ast/*.ast.json`: golden expected AST artifacts (`semiocore.ast.v1`)
+- `expected/lang/*.lang.json`: golden expected language manifests (`semiocore.lang.v1`)
+- `docs/contract/*`: human-readable contract specs (normative docs)
+- `schemas/*.schema.json`: machine-checkable JSON Schemas
+
+## CLI (reference toolchain)
+Run as a module (recommended):
+
+- `python -m semioc --help`
+
+Available commands (v1.1.0):
+- `check`
+- `run`
+- `replay`
+- `ctxscan`
+- `parse` (emits `semiocore.ast.v1`, plus optional language manifest via `--emit-lang`)
 
 ## Semantics conventions encoded by fixtures (v1.0 demo contract)
 The expected fixtures assume:
@@ -36,9 +47,10 @@ From Git Bash:
 
 ```bash
 make paper-demo
-
-
+```
 
 ## Contracts (Stable JSON artifacts)
+- AST: docs/contract/ast.v1.md
+- Language manifest: docs/contract/lang.v1.md
 - Trace: docs/contract/trace.v1.md
 - Ctxscan: docs/contract/ctxscan.v1.md
