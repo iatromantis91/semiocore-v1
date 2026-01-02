@@ -1,25 +1,47 @@
-# semiocore.ast.v1 — Canonical AST Contract (v1)
+# semiocore.ast.v1 — AST Contract (v1)
 
 ## Purpose
-Defines a stable JSON AST envelope produced by SemioCore tooling. This contract is intentionally minimal: it stabilizes the envelope and top-level structure while allowing extension within nodes.
+This contract defines the stable, machine-checkable JSON shape of the canonical AST emitted by SemioCore. It is designed for deterministic parsing, golden conformance testing, and SemVer-compatible evolution.
 
 ## Contract ID
 - `semiocore.ast.v1`
 
+## Related Contracts
+- Language manifest contract: `semiocore.lang.v1`
+
 ## Artifact: AST (JSON)
-An AST artifact MUST be a JSON object.
+An AST artifact MUST be a JSON object with at least the required fields below.
 
 ### Required fields
 - `schema` (string, const): `semiocore.ast.v1`
-- `program_file` (string): Source program path/identifier (repo-relative POSIX recommended)
-- `ast` (object):
-  - `node` (string, const): `"Program"`
-  - `body` (array[object]): Statement nodes (may be empty)
+- `program_file` (string): Repository-relative POSIX path to the `.sc` source (portable, stable)
+- `ast` (object): The AST root node
 
-## Extensibility
-- Additional keys MAY appear at any level (`additionalProperties: true`).
-- Consumers MUST ignore unknown fields to remain forward compatible.
+### AST minimal shape (v1)
+- `ast.node` (string, const): `"Program"`
+- `ast.body` (array): Sequence of statement nodes (may be empty)
 
-## Determinism & Portability
-- JSON emission SHOULD be deterministic (sorted keys, stable indentation, final newline).
-- `program_file` SHOULD be repo-relative POSIX to support golden conformance tests across OSes.
+Implementations MAY extend `ast` nodes with additional properties, provided the required minimal structure remains valid.
+
+## Determinism requirements
+- Emitted JSON MUST be deterministic for reproducibility and golden tests.
+- Keys SHOULD be sorted and output SHOULD end with a newline when serialized.
+
+## Machine schema
+- JSON Schema: `schemas/ast.schema.json`
+- `$id` MUST equal `semiocore.ast.v1`
+- `properties.schema.const` MUST equal `semiocore.ast.v1`
+
+## Example
+A minimal valid AST artifact (body empty):
+
+```json
+{
+  "schema": "semiocore.ast.v1",
+  "program_file": "programs/conformance/basic.sc",
+  "ast": {
+    "node": "Program",
+    "body": []
+  }
+}
+
