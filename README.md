@@ -39,8 +39,18 @@ These conventions should match the reference implementation of `semioc` used to 
 ## Requirements
 - Git for Windows (Git Bash recommended)
 - Python 3 in PATH
-- A `semioc` CLI in PATH implementing the v1.0 commands:
-  `check`, `run`, `opt`, `verify-proof`, `ctxscan`, `ctxwitness`, `replay`
+- Recommended invocation: `python -m semioc ...` (portable on Windows/macOS/Linux)
+
+CLI commands available in toolchain v1.1.0:
+- `check`
+- `run`
+- `replay`
+- `ctxscan`
+- `parse` (emits `semiocore.ast.v1`, plus optional language manifest via `--emit-lang`)
+
+Contracts:
+- `semiocore.ast.v1`
+- `semiocore.lang.v1`
 
 ## Run the full paper demo
 From Git Bash:
@@ -54,3 +64,5 @@ make paper-demo
 - Language manifest: docs/contract/lang.v1.md
 - Trace: docs/contract/trace.v1.md
 - Ctxscan: docs/contract/ctxscan.v1.md
+- `semiocore.ast.v1`
+- `semiocore.lang.v1`
