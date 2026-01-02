@@ -107,6 +107,7 @@ def main(argv=None) -> int:
     prs = sub.add_parser("parse", help="Parse a .sc program and emit a stable AST JSON")
     prs.add_argument("program", help="Path to the .sc program file")
     prs.add_argument("--emit-ast", dest="emit_ast", help="Write AST JSON to this file (default: stdout)")
+    prs.add_argument("--emit-lang", dest="emit_lang", help="Write language manifest JSON to this file (default: no manifest)")
 
     args = ap.parse_args(argv)
 
