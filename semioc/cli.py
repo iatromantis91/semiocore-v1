@@ -11,6 +11,7 @@ from .engine import run_program, make_manifest, write_json
 from .replay import replay_from_manifest
 from .ctxscan import ctxscan
 from .parser import parse_program_to_ast
+from .contract_ids import LANG_SCHEMA_V1, AST_SCHEMA_V1
 
 _ALLOWED_OPS = {"Add", "Sign", "JitterU"}
 
@@ -27,8 +28,12 @@ def cmd_parse(args: argparse.Namespace) -> int:
         program_file = program_path.resolve().relative_to(Path.cwd().resolve()).as_posix()
     except Exception:
         program_file = program_path.as_posix()
-
+   
+    lang_obj = _make_lang_manifest(program_file)
     ast_obj = parse_program_to_ast(src, program_file=program_file)
+
+    if args.emit_lang:
+        Path(args.emit_lang).write_text(_dump_json(lang_obj), encoding="utf-8")
 
     if args.emit_ast:
         Path(args.emit_ast).write_text(_dump_json(ast_obj), encoding="utf-8")
@@ -40,6 +45,18 @@ def cmd_parse(args: argparse.Namespace) -> int:
 def _dump_json(payload: dict) -> str:
     # JSON determinista para diffs/golden tests y reproducibilidad
     return json.dumps(payload, sort_keys=True, ensure_ascii=False, indent=2) + "\n"
+
+def _make_lang_manifest(program_file: str) -> dict:
+    # Manifest v1: estable, extensible
+    return {
+        "schema": LANG_SCHEMA_V1,
+        "program_file": program_file,
+        "lang_version": "1",
+        "features": [],
+        "ast_schema": AST_SCHEMA_V1,
+        # opcional: vacío por ahora; mantenemos el campo fuera si no se usa
+        # "diagnostics": [],
+    }
 
 def _fail(msg: str) -> int:
     print(f"ERROR: {msg}", file=sys.stderr)
@@ -75,7 +92,7 @@ def check_strict(program_file: str) -> int:
     return 0
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="semioc", description="SemioCore reference toolchain (v1.0.0)")
+    ap = argparse.ArgumentParser(prog="semioc", description=f"SemioCore reference toolchain (v{VERSION})")
     ap.add_argument("--version", action="store_true", help="Print version and exit")
     sub = ap.add_subparsers(dest="cmd", required=False)
 
@@ -107,6 +124,7 @@ def main(argv=None) -> int:
     prs = sub.add_parser("parse", help="Parse a .sc program and emit a stable AST JSON")
     prs.add_argument("program", help="Path to the .sc program file")
     prs.add_argument("--emit-ast", dest="emit_ast", help="Write AST JSON to this file (default: stdout)")
+    prs.add_argument("--emit-lang", dest="emit_lang", help="Write language manifest JSON to this file (default: no manifest)")
 
     args = ap.parse_args(argv)
 
