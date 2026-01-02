@@ -3,6 +3,7 @@ from dataclasses import replace, is_dataclass
 from itertools import permutations
 from typing import Any, Dict, List, Optional, Tuple
 
+from semioc.contract_ids import CTXSCAN_SCHEMA_V1
 from .sc_parser import parse_program_file
 from .world import load_world
 from .engine import run_program, write_json, canonical_ctx
@@ -143,7 +144,7 @@ def ctxscan(program_file: str,
     noncontextual = (witness is None)
 
     report = {
-        "schema": "semiocore.ctxscan.v1",
+        "schema": CTXSCAN_SCHEMA_V1,
         "program_file": program_file,
         "world_file": world_file,
         "protocol": "Strict",
