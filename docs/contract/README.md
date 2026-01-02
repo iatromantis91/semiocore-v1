@@ -1,17 +1,14 @@
-# SemioCore contracts index
+# Contracts index
 
-This directory contains the normative contract specifications for SemioCore’s stable JSON artifacts.
-Contracts are versioned and treated as compatibility surfaces (SemVer-guided evolution).
+This directory contains the normative, human-readable specifications for SemioCore’s stable JSON contracts, alongside their machine-checkable JSON Schemas and golden fixtures.
 
-## Contracts
+| Contract ID | Schema file | Spec doc | Golden fixtures |
+|---|---|---|---|
+| `semiocore.trace.v1` | `schemas/trace.schema.json` | `docs/contract/trace.v1.md` | `expected/**` (trace fixtures, if present) |
+| `semiocore.ctxscan.v1` | `schemas/ctxscan.schema.json` | `docs/contract/ctxscan.v1.md` | `expected/**` (ctxscan fixtures, if present) |
+| `semiocore.ast.v1` | `schemas/ast.schema.json` | `docs/contract/ast.v1.md` | `expected/ast/*.ast.json` |
+| `semiocore.lang.v1` | `schemas/lang.schema.json` | `docs/contract/lang.v1.md` | `expected/lang/*.lang.json` |
 
-| Artifact | Contract ID | Spec (human) | Schema (machine) | Golden fixtures |
-|---|---|---|---|---|
-| AST | `semiocore.ast.v1` | `ast.v1.md` | `schemas/ast.schema.json` | `expected/ast/*.ast.json` |
-| Language manifest | `semiocore.lang.v1` | `lang.v1.md` | `schemas/lang.schema.json` | `expected/lang/*.lang.json` |
-| Trace | `semiocore.trace.v1` | `trace.v1.md` | (see `schemas/`) | (see fixtures/expected) |
-| Ctxscan report | `semiocore.ctxscan.v1` | `ctxscan.v1.md` | (see `schemas/`) | (see fixtures/expected) |
-
-Notes:
-- JSON emission is deterministic: `sort_keys=true`, `ensure_ascii=false`, `indent=2`, trailing newline.
-- `program_file` is repository-relative and POSIX-normalized for cross-OS stability.
+## Notes
+- Golden fixtures provide strong, deterministic conformance checks.
+- JSON Schemas provide portable, machine-verifiable contract validation.
