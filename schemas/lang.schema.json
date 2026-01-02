@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semiocore.lang.v1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "semiocore.lang.v1"
+    },
+    "program_file": {
+      "type": "string"
+    },
+    "lang_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ast_schema": {
+      "type": "string",
+      "const": "semiocore.ast.v1"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "code",
+          "message"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "program_file",
+    "lang_version",
+    "features",
+    "ast_schema"
+  ],
+  "additionalProperties": true
+}

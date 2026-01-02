@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semiocore.ast.v1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "semiocore.ast.v1"
+    },
+    "program_file": {
+      "type": "string"
+    },
+    "ast": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "const": "Program"
+        },
+        "body": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "required": [
+        "node",
+        "body"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema",
+    "program_file",
+    "ast"
+  ],
+  "additionalProperties": true
+}
