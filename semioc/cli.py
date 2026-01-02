@@ -1,15 +1,45 @@
 import argparse
+import json
 import os
 import sys
 
+from pathlib import Path
 from . import VERSION
 from .sc_parser import parse_program_file
 from .world import load_world
 from .engine import run_program, make_manifest, write_json
 from .replay import replay_from_manifest
 from .ctxscan import ctxscan
+from .parser import parse_program_to_ast
 
 _ALLOWED_OPS = {"Add", "Sign", "JitterU"}
+
+def cmd_parse(args: argparse.Namespace) -> int:
+    program_path = Path(args.program)
+
+    # Lee fuente
+    src = program_path.read_text(encoding="utf-8")
+
+    # program_file estable y portable:
+    # - si el archivo está bajo el cwd, usa ruta relativa POSIX
+    # - si no, usa la ruta tal cual en POSIX
+    try:
+        program_file = program_path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except Exception:
+        program_file = program_path.as_posix()
+
+    ast_obj = parse_program_to_ast(src, program_file=program_file)
+
+    if args.emit_ast:
+        Path(args.emit_ast).write_text(_dump_json(ast_obj), encoding="utf-8")
+    else:
+        sys.stdout.write(_dump_json(ast_obj))
+
+    return 0
+
+def _dump_json(payload: dict) -> str:
+    # JSON determinista para diffs/golden tests y reproducibilidad
+    return json.dumps(payload, sort_keys=True, ensure_ascii=False, indent=2) + "\n"
 
 def _fail(msg: str) -> int:
     print(f"ERROR: {msg}", file=sys.stderr)
@@ -73,6 +103,10 @@ def main(argv=None) -> int:
     cxs.add_argument("--emit-report", required=True, help="Output ctxscan report JSON path")
     cxs.add_argument("--emit-dir", default=None, help="Optional directory to write per-permutation traces")
     cxs.add_argument("--max-perms", default=None, help="Optional cap on number of permutations")
+    # parse (NEW)
+    prs = sub.add_parser("parse", help="Parse a .sc program and emit a stable AST JSON")
+    prs.add_argument("program", help="Path to the .sc program file")
+    prs.add_argument("--emit-ast", dest="emit_ast", help="Write AST JSON to this file (default: stdout)")
 
     args = ap.parse_args(argv)
 
@@ -83,6 +117,12 @@ def main(argv=None) -> int:
     if args.cmd is None:
         ap.print_help()
         return 2
+
+    if args.cmd == "parse":
+        try:
+            return cmd_parse(args)
+        except Exception as e:
+            return _fail(str(e))
 
     if args.cmd == "check":
         if args.strict:
