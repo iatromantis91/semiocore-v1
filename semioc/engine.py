@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional, Tuple, List
 
 from .model import Program, Context
 from .util import sha256_file
+from semioc.contract_ids import TRACE_SCHEMA_V1
 
 LCG_A = 1664525
 LCG_C = 1013904223
@@ -146,7 +147,7 @@ def run_program(program: Program, world_channels: Dict[str, float], *, program_f
     }
 
     trace = {
-        "schema": "semiocore.trace.v1",
+        "schema": TRACE_SCHEMA_V1,
         "program_file": program_file,
         "events": events,
         "summary": summary,
