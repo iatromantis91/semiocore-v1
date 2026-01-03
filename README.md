@@ -1,4 +1,4 @@
-# SemioCore v1.0 — Minimal Reproducible Artifact (Paper Demo)
+# SemioCore v1.0 — Minimal Reproducible Artifact
 
 This repository is a fixture-locked, paper-facing artifact for **SemioCore v1.0**, an experiment DSL designed to formalize **measurement regimes + explicit interventions**. The purpose is to make the manuscript’s central claims *executable* rather than merely descriptive.
 
