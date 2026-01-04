@@ -49,3 +49,9 @@ make paper-demo
 python -m semioc contracts validate
 python -m semioc contracts list
 ```
+## Project Philosophy
+
+SemioCore is governed by a strict design manifesto that defines its scope,
+non-goals, and contract discipline.
+
+See [MANIFESTO.md](MANIFESTO.md).
