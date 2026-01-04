@@ -1,0 +1,14 @@
+{
+  "channels": [
+    "chCircadianScore"
+  ],
+  "decision_rule": "Apply fixed context operator chain as declared in the program; verdict is AFFIRM iff effective r > 0 after context.",
+  "description": "Proxy circadian disruption score (normalized). Context shifts the decision boundary mildly.",
+  "name": "Circadian disruption regime",
+  "normalization": "Scores are normalized externally; sign indicates direction toward regime target.",
+  "notes": "This is a v1 demonstrator contract; extend with domain-specific scoring pipelines outside SemioCore.",
+  "program": "programs/biomed_v1/circadian_disruption.sc",
+  "schema": "semiocore.biomed.circadian_disruption.v1",
+  "version": "1",
+  "world_example": "fixtures/world/biomed_world_v1.json"
+}

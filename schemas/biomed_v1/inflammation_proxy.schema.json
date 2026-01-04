@@ -1,0 +1,54 @@
+{
+  "$id": "semiocore.biomed.inflammation_proxy.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "channels": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "decision_rule": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "normalization": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "program": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "semiocore.biomed.inflammation_proxy.v1"
+    },
+    "version": {
+      "type": "string"
+    },
+    "world_example": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "name",
+    "version",
+    "description",
+    "program",
+    "world_example",
+    "channels",
+    "normalization",
+    "decision_rule"
+  ],
+  "title": "Inflammation proxy regime",
+  "type": "object"
+}

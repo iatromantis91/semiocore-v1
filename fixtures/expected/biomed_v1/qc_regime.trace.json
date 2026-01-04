@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "ch": "chQCFlag",
+      "ctx": "Sign",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0,
+      "obj": "AFFIRM",
+      "r_eff": 1.0,
+      "r_raw": 1.0,
+      "s": 1.0,
+      "step": 1,
+      "t": 1.0
+    }
+  ],
+  "program_file": "programs/biomed_v1/qc_regime.sc",
+  "schema": "semiocore.trace.v1",
+  "summary": {
+    "N": 1,
+    "deltaT": 1.0,
+    "kappa": 1.0,
+    "rho": 1.0
+  }
+}

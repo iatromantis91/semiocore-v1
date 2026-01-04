@@ -1,0 +1,36 @@
+{
+  "events": [
+    {
+      "ch": "chTrajectoryPre",
+      "ctx": "Sign",
+      "expected_obj": "NEGATE",
+      "kappa_loc": 1.0,
+      "obj": "NEGATE",
+      "r_eff": -1.0,
+      "r_raw": -0.2,
+      "s": -0.2,
+      "step": 1,
+      "t": 1.0
+    },
+    {
+      "ch": "chTrajectoryPost",
+      "ctx": "Sign",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0,
+      "obj": "AFFIRM",
+      "r_eff": 1.0,
+      "r_raw": 0.15,
+      "s": 0.15,
+      "step": 2,
+      "t": 2.0
+    }
+  ],
+  "program_file": "programs/biomed_v1/trajectory_comparator.sc",
+  "schema": "semiocore.trace.v1",
+  "summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "kappa": 1.0,
+    "rho": 1.0
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "program_file": "programs/biomed_v1/circadian_disruption.sc",
+  "program_hash_sha256": "d109d377eda288fa129f00d4d31e9ccdf56bf3c1e509a76106a4a06e8524cb7a",
+  "protocol": "Strict",
+  "rng": null,
+  "run_id": "run-d109d377",
+  "schema": "semiocore.manifest.v1",
+  "seed": null,
+  "semio_version": "1.0.0",
+  "stdlib_version": "1.0.0",
+  "timestamp": "1970-01-01T00:00:00+00:00",
+  "world_file": "fixtures/world/biomed_world_v1.json",
+  "world_hash_sha256": "b6770408d8e477b2e22c6f63610a749ff5987dd42b83a28966e9c63967842675"
+}

@@ -1,0 +1,62 @@
+{
+  "$id": "semiocore.trace.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "events": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "ch": {
+            "type": "string"
+          },
+          "ctx": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ch",
+          "ctx"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "program_file": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "semiocore.trace.v1"
+    },
+    "summary": {
+      "additionalProperties": true,
+      "properties": {
+        "N": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "deltaT": {
+          "type": "number"
+        },
+        "kappa": {
+          "type": "number"
+        },
+        "rho": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "N"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "program_file",
+    "summary",
+    "events"
+  ],
+  "title": "semiocore trace",
+  "type": "object"
+}

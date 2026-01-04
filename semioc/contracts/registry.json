@@ -1,0 +1,227 @@
+{
+  "contracts": [
+    {
+      "contract_id": "semiocore.ast.v1",
+      "doc_path": "docs/contract/ast.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/ast/basic.ast.json",
+          "produced_by": {
+            "args": [
+              "--emit-ast"
+            ],
+            "cli": "semioc parse"
+          }
+        }
+      ],
+      "kind": "ast",
+      "schema_id_expected": "semiocore.ast.v1",
+      "schema_path": "schemas/ast.schema.json"
+    },
+    {
+      "contract_id": "semiocore.lang.v1",
+      "doc_path": "docs/contract/lang.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/lang/basic.lang.json",
+          "produced_by": {
+            "args": [
+              "--emit-lang"
+            ],
+            "cli": "semioc parse"
+          }
+        }
+      ],
+      "kind": "lang_manifest",
+      "schema_id_expected": "semiocore.lang.v1",
+      "schema_path": "schemas/lang.schema.json"
+    },
+    {
+      "contract_id": "semiocore.trace.v1",
+      "doc_path": "docs/contract/trace.v1.md",
+      "fixtures": [
+        {
+          "name": "expected_e1",
+          "path": "fixtures/expected/e1.trace.json",
+          "produced_by": {
+            "args": [],
+            "cli": "semioc run"
+          }
+        }
+      ],
+      "kind": "trace",
+      "schema_id_expected": "semiocore.trace.v1",
+      "schema_path": "schemas/trace.schema.json"
+    },
+    {
+      "contract_id": "semiocore.ctxscan.v1",
+      "doc_path": "docs/contract/ctxscan.v1.md",
+      "fixtures": [
+        {
+          "name": "expected_e1",
+          "path": "fixtures/expected/e1.ctxscan.json",
+          "produced_by": {
+            "args": [
+              "programs/e1_fusion.sc",
+              "--world",
+              "fixtures/world/paper_world.json"
+            ],
+            "cli": "semioc ctxscan"
+          }
+        },
+        {
+          "name": "expected_e2",
+          "path": "fixtures/expected/e2.ctxscan.json",
+          "produced_by": {
+            "args": [
+              "programs/e2_border.sc",
+              "--world",
+              "fixtures/world/paper_world.json"
+            ],
+            "cli": "semioc ctxscan"
+          }
+        },
+        {
+          "name": "expected_e3",
+          "path": "fixtures/expected/e3.ctxscan.json",
+          "produced_by": {
+            "args": [
+              "programs/e3_noise.sc",
+              "--world",
+              "fixtures/world/paper_world.json"
+            ],
+            "cli": "semioc ctxscan"
+          }
+        }
+      ],
+      "kind": "ctxscan",
+      "schema_id_expected": "semiocore.ctxscan.v1",
+      "schema_path": "schemas/ctxscan.schema.json"
+    },
+    {
+      "contract_id": "semiocore.plasticity.v1",
+      "doc_path": "docs/contract/plasticity.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/plasticity/basic.plasticity.json",
+          "produced_by": {
+            "args": [
+              "--emit-report"
+            ],
+            "cli": "semioc plasticity"
+          }
+        }
+      ],
+      "kind": "plasticity_report",
+      "schema_id_expected": "semiocore.plasticity.v1",
+      "schema_path": "schemas/plasticity.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.inflammation_proxy.v1",
+      "doc_path": "docs/contract/biomed_v1/inflammation_proxy.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/inflammation_proxy.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.inflammation_proxy.v1",
+      "schema_path": "schemas/biomed_v1/inflammation_proxy.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.metabolic_risk.v1",
+      "doc_path": "docs/contract/biomed_v1/metabolic_risk.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/metabolic_risk.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.metabolic_risk.v1",
+      "schema_path": "schemas/biomed_v1/metabolic_risk.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.circadian_disruption.v1",
+      "doc_path": "docs/contract/biomed_v1/circadian_disruption.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/circadian_disruption.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.circadian_disruption.v1",
+      "schema_path": "schemas/biomed_v1/circadian_disruption.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.frailty_phenotype.v1",
+      "doc_path": "docs/contract/biomed_v1/frailty_phenotype.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/frailty_phenotype.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.frailty_phenotype.v1",
+      "schema_path": "schemas/biomed_v1/frailty_phenotype.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.qc_regime.v1",
+      "doc_path": "docs/contract/biomed_v1/qc_regime.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/qc_regime.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.qc_regime.v1",
+      "schema_path": "schemas/biomed_v1/qc_regime.schema.json"
+    },
+    {
+      "contract_id": "semiocore.biomed.trajectory_comparator.v1",
+      "doc_path": "docs/contract/biomed_v1/trajectory_comparator.md",
+      "fixtures": [
+        {
+          "name": "manifest_v1",
+          "path": "fixtures/biomed_v1/trajectory_comparator.fixture.json",
+          "produced_by": {
+            "args": [],
+            "cli": "manual"
+          }
+        }
+      ],
+      "kind": "biomed_regime",
+      "schema_id_expected": "semiocore.biomed.trajectory_comparator.v1",
+      "schema_path": "schemas/biomed_v1/trajectory_comparator.schema.json"
+    }
+  ],
+  "registry_version": "1",
+  "toolchain": "semiocore"
+}

@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "ch": "chInflamScore",
+      "ctx": "Sign",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0,
+      "obj": "AFFIRM",
+      "r_eff": 1.0,
+      "r_raw": 0.35,
+      "s": 0.35,
+      "step": 1,
+      "t": 1.0
+    }
+  ],
+  "program_file": "programs/biomed_v1/inflammation_proxy.sc",
+  "schema": "semiocore.trace.v1",
+  "summary": {
+    "N": 1,
+    "deltaT": 1.0,
+    "kappa": 1.0,
+    "rho": 1.0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "ch": "chCircadianScore",
+      "ctx": "Add(0.1)>>Sign",
+      "expected_obj": "NEGATE",
+      "kappa_loc": 1.0,
+      "obj": "NEGATE",
+      "r_eff": -1.0,
+      "r_raw": -0.15,
+      "s": -0.15,
+      "step": 1,
+      "t": 1.0
+    }
+  ],
+  "program_file": "programs/biomed_v1/circadian_disruption.sc",
+  "schema": "semiocore.trace.v1",
+  "summary": {
+    "N": 1,
+    "deltaT": 1.0,
+    "kappa": 1.0,
+    "rho": 1.0
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "channels": [
+    "chTrajectoryPre",
+    "chTrajectoryPost"
+  ],
+  "decision_rule": "Apply fixed context operator chain as declared in the program; verdict is AFFIRM iff effective r > 0 after context.",
+  "description": "Two-point comparator over pre/post proxy scores. Encodes a minimal longitudinal replay target.",
+  "name": "Trajectory comparator regime",
+  "normalization": "Scores are normalized externally; sign indicates direction toward regime target.",
+  "notes": "This is a v1 demonstrator contract; extend with domain-specific scoring pipelines outside SemioCore.",
+  "program": "programs/biomed_v1/trajectory_comparator.sc",
+  "schema": "semiocore.biomed.trajectory_comparator.v1",
+  "version": "1",
+  "world_example": "fixtures/world/biomed_world_v1.json"
+}

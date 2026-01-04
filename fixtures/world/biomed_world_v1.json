@@ -1,0 +1,12 @@
+{
+  "channels": {
+    "chCircadianScore": -0.15,
+    "chFrailtyScore": 0.05,
+    "chInflamScore": 0.35,
+    "chMetabolicScore": 0.1,
+    "chQCFlag": 1.0,
+    "chTrajectoryPost": 0.15,
+    "chTrajectoryPre": -0.2
+  },
+  "schema": "semiocore.world.v1"
+}

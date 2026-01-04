@@ -1,0 +1,63 @@
+{
+  "$id": "semiocore.ctxscan.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "baseline_ctx": {
+      "type": "string"
+    },
+    "baseline_summary": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "dkappa_max": {
+      "type": "number"
+    },
+    "noncontextual": {
+      "type": "boolean"
+    },
+    "permutations": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "program_file": {
+      "type": "string"
+    },
+    "protocol": {
+      "type": "string"
+    },
+    "schema": {
+      "const": "semiocore.ctxscan.v1"
+    },
+    "witness": {
+      "anyOf": [
+        {
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "world_file": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "protocol",
+    "program_file",
+    "world_file",
+    "witness",
+    "permutations",
+    "baseline_ctx",
+    "baseline_summary",
+    "dkappa_max",
+    "noncontextual"
+  ],
+  "title": "semiocore ctxscan report",
+  "type": "object"
+}

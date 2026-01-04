@@ -1,0 +1,14 @@
+{
+  "program_file": "programs/biomed_v1/inflammation_proxy.sc",
+  "program_hash_sha256": "8c43ea1ed72fa7ca6ea75dd5df67683e4830084988ba6e3ec6e3329fbb13659c",
+  "protocol": "Strict",
+  "rng": null,
+  "run_id": "run-8c43ea1e",
+  "schema": "semiocore.manifest.v1",
+  "seed": null,
+  "semio_version": "1.0.0",
+  "stdlib_version": "1.0.0",
+  "timestamp": "1970-01-01T00:00:00+00:00",
+  "world_file": "fixtures/world/biomed_world_v1.json",
+  "world_hash_sha256": "b6770408d8e477b2e22c6f63610a749ff5987dd42b83a28966e9c63967842675"
+}
