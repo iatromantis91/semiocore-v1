@@ -1,0 +1,30 @@
+{
+  "baseline_ctx": "JitterU(0.05)",
+  "baseline_summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "kappa": 1.0,
+    "rho": 1.0
+  },
+  "dkappa_max": 0.0,
+  "noncontextual": true,
+  "permutations": [
+    {
+      "ctx": "JitterU(0.05)",
+      "dkappa": 0.0,
+      "i": 0,
+      "summary": {
+        "N": 2,
+        "deltaT": 2.0,
+        "kappa": 1.0,
+        "rho": 1.0
+      },
+      "trace_file": "out/e3.ctxscan.traces\\perm_00.trace.json"
+    }
+  ],
+  "program_file": "programs/e3_jitter_seed.sc",
+  "protocol": "Strict",
+  "schema": "semiocore.ctxscan.v1",
+  "witness": null,
+  "world_file": "fixtures/world/paper_world.json"
+}

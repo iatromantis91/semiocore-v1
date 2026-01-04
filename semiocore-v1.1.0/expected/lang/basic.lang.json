@@ -1,0 +1,7 @@
+{
+  "ast_schema": "semiocore.ast.v1",
+  "features": [],
+  "lang_version": "1",
+  "program_file": "programs/conformance/basic.sc",
+  "schema": "semiocore.lang.v1"
+}

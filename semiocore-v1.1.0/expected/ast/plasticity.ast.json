@@ -1,0 +1,8 @@
+{
+  "ast": {
+    "body": [],
+    "node": "Program"
+  },
+  "program_file": "programs/conformance/plasticity.sc",
+  "schema": "semiocore.ast.v1"
+}

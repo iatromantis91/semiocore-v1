@@ -1,0 +1,36 @@
+{
+  "schema": "semiocore.trace.v1",
+  "program_file": "programs/e1_fusion.sc",
+  "events": [
+    {
+      "step": 1,
+      "t": 1.0,
+      "ctx": "Add(0.2)>>Add(0.3)",
+      "ch": "chP",
+      "s": 0.1,
+      "r_raw": 0.1,
+      "r_eff": 0.6,
+      "obj": "AFFIRM",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0
+    },
+    {
+      "step": 2,
+      "t": 2.0,
+      "ctx": "Add(0.2)>>Add(0.3)",
+      "ch": "chQ",
+      "s": 0.2,
+      "r_raw": 0.2,
+      "r_eff": 0.7,
+      "obj": "AFFIRM",
+      "expected_obj": "AFFIRM",
+      "kappa_loc": 1.0
+    }
+  ],
+  "summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "rho": 1.0,
+    "kappa": 1.0
+  }
+}

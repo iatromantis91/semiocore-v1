@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/iatromantis91/semiocore-v1/blob/main/schemas/trace.schema.json",
+  "title": "semiocore trace",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "semiocore.trace.v1" },
+
+    "program_file": { "type": "string" },
+
+    "summary": {
+      "type": "object",
+      "properties": {
+        "N": { "type": "integer", "minimum": 0 },
+        "deltaT": { "type": "number" },
+        "kappa": { "type": "number" },
+        "rho": { "type": "number" }
+      },
+      "required": ["N"],
+      "additionalProperties": true
+    },
+
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ch": { "type": "string" },
+          "ctx": { "type": "string" }
+        },
+        "required": ["ch", "ctx"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["schema", "program_file", "summary", "events"],
+  "additionalProperties": true
+}

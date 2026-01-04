@@ -1,0 +1,88 @@
+{
+  "contracts": [
+    {
+      "contract_id": "semiocore.ast.v1",
+      "doc_path": "docs/contract/ast.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/ast/basic.ast.json",
+          "produced_by": {
+            "args": [
+              "--emit-ast"
+            ],
+            "cli": "semioc parse"
+          }
+        }
+      ],
+      "kind": "ast",
+      "schema_id_expected": "semiocore.ast.v1",
+      "schema_path": "schemas/ast.schema.json"
+    },
+    {
+      "contract_id": "semiocore.lang.v1",
+      "doc_path": "docs/contract/lang.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/lang/basic.lang.json",
+          "produced_by": {
+            "args": [
+              "--emit-lang"
+            ],
+            "cli": "semioc parse"
+          }
+        }
+      ],
+      "kind": "lang_manifest",
+      "schema_id_expected": "semiocore.lang.v1",
+      "schema_path": "schemas/lang.schema.json"
+    },
+    {
+      "contract_id": "semiocore.trace.v1",
+      "doc_path": "docs/contract/trace.v1.md",
+      "fixtures": [
+        {
+          "name": "expected_e1",
+          "path": "fixtures/expected/e1.trace.json",
+          "produced_by": {
+            "args": [],
+            "cli": "semioc run"
+          }
+        }
+      ],
+      "kind": "trace",
+      "schema_id_expected": "semiocore.trace.v1",
+      "schema_path": "schemas/trace.schema.json"
+    },
+    {
+      "contract_id": "semiocore.ctxscan.v1",
+      "doc_path": "docs/contract/ctxscan.v1.md",
+      "fixtures": [],
+      "kind": "ctxscan",
+      "schema_id_expected": "semiocore.ctxscan.v1",
+      "schema_path": "schemas/ctxscan.schema.json"
+    },
+    {
+      "contract_id": "semiocore.plasticity.v1",
+      "doc_path": "docs/contract/plasticity.v1.md",
+      "fixtures": [
+        {
+          "name": "basic",
+          "path": "expected/plasticity/basic.plasticity.json",
+          "produced_by": {
+            "args": [
+              "--emit-report"
+            ],
+            "cli": "semioc plasticity"
+          }
+        }
+      ],
+      "kind": "plasticity_report",
+      "schema_id_expected": "semiocore.plasticity.v1",
+      "schema_path": "schemas/plasticity.schema.json"
+    }
+  ],
+  "registry_version": "1",
+  "toolchain": "semiocore"
+}

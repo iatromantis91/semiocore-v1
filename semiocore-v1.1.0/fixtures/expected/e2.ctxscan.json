@@ -1,0 +1,48 @@
+{
+  "baseline_ctx": "Add(0.5)>>Sign",
+  "baseline_summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "kappa": 0.0,
+    "rho": 1.0
+  },
+  "dkappa_max": 1.0,
+  "noncontextual": false,
+  "permutations": [
+    {
+      "ctx": "Add(0.5)>>Sign",
+      "dkappa": 0.0,
+      "i": 0,
+      "summary": {
+        "N": 2,
+        "deltaT": 2.0,
+        "kappa": 0.0,
+        "rho": 1.0
+      },
+      "trace_file": "out/e2.ctxscan.traces\\perm_00.trace.json"
+    },
+    {
+      "ctx": "Sign>>Add(0.5)",
+      "dkappa": 1.0,
+      "i": 1,
+      "summary": {
+        "N": 2,
+        "deltaT": 2.0,
+        "kappa": 1.0,
+        "rho": 1.0
+      },
+      "trace_file": "out/e2.ctxscan.traces\\perm_01.trace.json"
+    }
+  ],
+  "program_file": "programs/e2_border.sc",
+  "protocol": "Strict",
+  "schema": "semiocore.ctxscan.v1",
+  "witness": {
+    "baseline_obj": "AFFIRM",
+    "ctx": "Sign>>Add(0.5)",
+    "diff_step": 1,
+    "obj": "NEGATE",
+    "perm_i": 1
+  },
+  "world_file": "fixtures/world/paper_world.json"
+}

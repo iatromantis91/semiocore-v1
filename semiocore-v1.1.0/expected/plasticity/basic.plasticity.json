@@ -1,0 +1,33 @@
+{
+  "channel": "chN",
+  "ctx": "Add(0.5)>>Sign",
+  "evidence": {
+    "N_events": 2,
+    "N_traces": 3,
+    "trace_digests": [
+      "e3e9fa6477ed6ed0edc63bf14032732b491a8b9c2a9ec9f45460d1d72c773cf6",
+      "b8d906a71e5930255b92ddd8905e6fe44e976dd95aa8b3142f765d4f6c104055",
+      "c9c240b97eb77279f42fa4a879751bf74cffc25522599080eeaac5c322e4571b"
+    ]
+  },
+  "metrics": {
+    "coherence_loss": 0.0,
+    "indeterminacy_rate": 0.0,
+    "noise_sensitivity": 0.0,
+    "partition_stability": 1.0
+  },
+  "program_file": "programs/conformance/plasticity.sc",
+  "protocol": "Strict",
+  "schema": "semiocore.plasticity.v1",
+  "verdict": {
+    "confidence": 0.04,
+    "plasticity_state": "stable",
+    "reasons": [],
+    "trend": "stable"
+  },
+  "windowing": {
+    "mode": "fixed",
+    "size": 10,
+    "step": 10
+  }
+}

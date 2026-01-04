@@ -1,0 +1,36 @@
+{
+  "schema": "semiocore.trace.v1",
+  "program_file": "programs/e2_border.sc",
+  "events": [
+    {
+      "step": 1,
+      "t": 1.0,
+      "ctx": "Add(0.5)>>Sign",
+      "ch": "chN",
+      "s": -0.25,
+      "r_raw": -0.25,
+      "r_eff": 1.0,
+      "obj": "AFFIRM",
+      "expected_obj": "NEGATE",
+      "kappa_loc": 0.0
+    },
+    {
+      "step": 2,
+      "t": 2.0,
+      "ctx": "Add(0.5)>>Sign",
+      "ch": "chN",
+      "s": -0.25,
+      "r_raw": -0.25,
+      "r_eff": 1.0,
+      "obj": "AFFIRM",
+      "expected_obj": "NEGATE",
+      "kappa_loc": 0.0
+    }
+  ],
+  "summary": {
+    "N": 2,
+    "deltaT": 2.0,
+    "rho": 1.0,
+    "kappa": 0.0
+  }
+}

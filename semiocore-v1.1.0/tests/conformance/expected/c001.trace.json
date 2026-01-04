@@ -1,0 +1,10 @@
+{
+  "kind": "trace",
+  "sha256_c14n": "ceafa261beee594f028a65d3ef242a5b79ab2972ab74c7a84c3c3b1c7b540c53",
+  "required_keys": [
+    "schema",
+    "program_file",
+    "summary",
+    "events"
+  ]
+}

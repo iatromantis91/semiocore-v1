@@ -1,0 +1,9 @@
+{
+  "schema": "semiocore.world.v1",
+  "channels": {
+    "chP": { "type": "const", "value": 0.10 },
+    "chQ": { "type": "const", "value": 0.20 },
+    "chN": { "type": "const", "value": -0.25 },
+    "chS": { "type": "const", "value": 0.20 }
+  }
+}

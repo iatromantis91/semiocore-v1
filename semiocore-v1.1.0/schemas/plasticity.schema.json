@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "semiocore.plasticity.v1",
+  "title": "semiocore plasticity report",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "semiocore.plasticity.v1"
+    },
+    "program_file": {
+      "type": "string"
+    },
+    "protocol": {
+      "type": "string"
+    },
+    "ctx": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "windowing": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "fixed",
+            "rolling",
+            "event-count",
+            "time"
+          ]
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "step": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "mode",
+        "size",
+        "step"
+      ],
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "partition_stability": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "noise_sensitivity": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "indeterminacy_rate": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "coherence_loss": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      },
+      "required": [
+        "partition_stability",
+        "noise_sensitivity",
+        "indeterminacy_rate",
+        "coherence_loss"
+      ],
+      "additionalProperties": true
+    },
+    "verdict": {
+      "type": "object",
+      "properties": {
+        "plasticity_state": {
+          "type": "string",
+          "enum": [
+            "stable",
+            "fragile",
+            "degraded"
+          ]
+        },
+        "trend": {
+          "type": "string",
+          "enum": [
+            "stable",
+            "declining",
+            "improving"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "plasticity_state",
+        "trend",
+        "confidence",
+        "reasons"
+      ],
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "N_traces": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "N_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trace_digests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "N_traces",
+        "N_events",
+        "trace_digests"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema",
+    "program_file",
+    "protocol",
+    "ctx",
+    "channel",
+    "windowing",
+    "metrics",
+    "verdict",
+    "evidence"
+  ],
+  "additionalProperties": true
+}
