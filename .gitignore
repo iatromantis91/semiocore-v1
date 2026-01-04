@@ -1,0 +1,11 @@
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Test temp outputs
+tests/tmp/
+
+# OS cruft
+.DS_Store
+Thumbs.db
